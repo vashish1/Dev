@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	"reqtemplates/Dev-Connect/database"
+	"Dev/database"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
