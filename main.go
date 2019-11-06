@@ -11,15 +11,18 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/Dev", index)
+	r.HandleFunc("/Dev/login",login).Methods("GET")
+	r.HandleFunc("/Dev/signup",signup).Methods("POST")
+	r.HandleFunc("/Dev/profile/{user}",profile).Methods("GET","POST")
 	http.Handle("/", r)
 	http.ListenAndServe(":80", nil)
 }
 
-var cl *mongo.Collection
+var cl,cl1 *mongo.Collection
 var c *mongo.Client
 
 func init() {
-	cl, c = database.Createdb()
+	cl,cl1, c = database.Createdb()
 }
 
 //index handles the main page
@@ -76,4 +79,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte(`{"error": "not created"}`))
+}
+
+//profile updates the profile
+func profile(w http.ResponseWriter,r *http.Request){
+
 }

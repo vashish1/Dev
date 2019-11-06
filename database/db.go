@@ -12,7 +12,7 @@ import (
 )
 
 //Createdb creates a database
-func Createdb() (*mongo.Collection, *mongo.Client) {
+func Createdb() (*mongo.Collection, *mongo.Collection, *mongo.Client) {
 
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
@@ -32,7 +32,8 @@ func Createdb() (*mongo.Collection, *mongo.Client) {
 
 	fmt.Println("Connected to MongoDB!")
 	usercollection := client.Database("Dev").Collection("User")
-	return usercollection, client
+	profilecollection :=client.Database("Dev").Collection("Profile")
+	return usercollection,profilecollection, client
 }
 
 //Insertintouserdb inserts the data into the database
