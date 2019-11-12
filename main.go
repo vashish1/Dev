@@ -1,8 +1,9 @@
 package main
 
 import (
-	"net/http"
 	"Dev/database"
+	"fmt"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,18 +12,18 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/Dev", index)
-	r.HandleFunc("/Dev/login",login).Methods("GET")
-	r.HandleFunc("/Dev/signup",signup).Methods("POST")
-	r.HandleFunc("/Dev/profile/{user}",profile).Methods("GET","POST")
+	r.HandleFunc("/Dev/login", login).Methods("GET")
+	r.HandleFunc("/Dev/signup", signup).Methods("POST")
+	r.HandleFunc("/Dev/profile/{user}", profile).Methods("GET", "POST")
 	http.Handle("/", r)
 	http.ListenAndServe(":80", nil)
 }
 
-var cl,cl1 *mongo.Collection
+var cl, cl1 *mongo.Collection
 var c *mongo.Client
 
 func init() {
-	cl,cl1, c = database.Createdb()
+	cl, cl1, c = database.Createdb()
 }
 
 //index handles the main page
@@ -67,6 +68,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	pass := r.FormValue("password")
 	cnf := r.FormValue("confirm-password")
+	fmt.Println(name)
 	if pass == cnf {
 		u = database.Newuser(name, email, pass)
 	}
@@ -82,6 +84,6 @@ func signup(w http.ResponseWriter, r *http.Request) {
 }
 
 //profile updates the profile
-func profile(w http.ResponseWriter,r *http.Request){
+func profile(w http.ResponseWriter, r *http.Request) {
 
 }

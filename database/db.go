@@ -50,6 +50,22 @@ func Insertintouserdb(usercollection *mongo.Collection, u User) bool {
 	return true
 }
 
+
+
+//Insertprofile inserts the data into the database
+func Insertprofile(usercollection *mongo.Collection, p Profile) bool {
+
+	fmt.Println(p.Email)
+	insertResult, err := usercollection.InsertOne(context.TODO(), p)
+	if err != nil {
+		log.Print(err)
+		return false
+	}
+
+	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	return true
+}
+
 //Findfromuserdb finds the required data
 func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool {
 	filter := bson.D{primitive.E{Key: "email", Value: st}}
