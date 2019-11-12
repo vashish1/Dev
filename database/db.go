@@ -82,16 +82,29 @@ func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool 
 	return true
 }
 
+//Findprofile .............
+func Findprofile(c *mongo.Collection,e string) Profile{
+	filter := bson.D{primitive.E{Key: "email", Value: e}}
+	var result Profile
+
+	err := c.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return result
+	}
+	return result
+}
+
 // err = client.Disconnect(context.TODO())
 
 // if err != nil {
 // 	log.Fatal(err)
 // }
+
 // fmt.Println("Connection to MongoDB closed.")
 
 //Finddb finds the required database
 func Finddb(c *mongo.Collection, s string) User {
-	filter := bson.D{primitive.E{Key: "username", Value: s}}
+	filter := bson.D{primitive.E{Key: "email", Value: s}}
 	var result User
 
 	err := c.FindOne(context.TODO(), filter).Decode(&result)

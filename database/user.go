@@ -51,10 +51,10 @@ Description string
 }
 
 //Newuser .....
-func Newuser(name string, email string, password string) User {
+func Newuser(name string, email string, password string, img string) User {
 
 	Password := SHA256ofstring(password)
-	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: ""}
+	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: img}
 	return U
 }
 
@@ -74,6 +74,31 @@ func Newprofile(a string,b string,c string,d string,e string,f []string,g string
 		Exp:      nil,
 	}
 	return pro
+}
+
+func Neweducation(a,b,c,d,e,f string)Education{
+	m:=Education{
+		School:      a,
+		Degree:      b,
+		Field:       c,
+		From:        d,
+		To:          e,
+		Achievemets: f,
+	}
+	return m
+}
+
+
+func Newexperience(a,b,c,d,e,f string)Experience{
+	m:=Experience{
+		Title:       a,
+		Org:         b,
+		Location:    c,
+		From:        d,
+		To:          e,
+		Description: f,
+	}
+	return m
 }
 
 //SHA256ofstring is a function which takes a string a reurns its sha256 hashed form

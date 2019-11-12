@@ -70,7 +70,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	cnf := r.FormValue("confirm-password")
 	fmt.Println(name)
 	if pass == cnf {
-		u = database.Newuser(name, email, pass)
+		u = database.Newuser(name, email, pass,"")
 	}
 
 	ok := database.Insertintouserdb(cl, u)
