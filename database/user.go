@@ -3,6 +3,11 @@ package database
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/net/context"
+	"log"
 
 	"github.com/google/uuid"
 )
@@ -58,7 +63,7 @@ func Newuser(name string, email string, password string, img string) User {
 	return U
 }
 
-func Newprofile(a string,b string,c string,d string,e string,f []string,g string ,h string,i map[string]string,j Education,k Experience)Profile{
+func Newprofile(a string,b string,c string,d string,e string,f []string,g string ,h string,i map[string]string,j []Education,k []Experience)Profile{
 	var pro Profile
 	pro=Profile{
 		Email:    a,
@@ -101,7 +106,7 @@ func Newexperience(a,b,c,d,e,f string)Experience{
 	return m
 }
 
-//SHA256ofstring is a function which takes a string a reurns its sha256 hashed form
+//SHA256ofstring is a function which takes a string a returns its sha256 hashed form
 func SHA256ofstring(p string) string {
 	h := sha1.New()
 	h.Write([]byte(p))
@@ -115,6 +120,40 @@ func GenerateUUID() string {
 	sd := uuid.New()
 	return (sd.String())
 
+}
+
+//Updateeducation ....
+func Updateeducation(c *mongo.Collection, o string, s Education) bool {
+
+	filter := bson.D{{"email", o}}
+
+	update := bson.M{
+		"$push":bson.M{"edu":s}}
+
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
+}
+
+//Updatexperience ....
+func Updateexperience(c *mongo.Collection, o string, s Experience)bool {
+	filter := bson.D{{"email", o}}
+
+	update := bson.M{
+		"$push":bson.M{"exp":s}}
+
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
 }
 
 
