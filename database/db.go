@@ -104,7 +104,7 @@ func Findprofile(c *mongo.Collection,e string) Profile{
 
 //Finddb finds the required database
 func Finddb(c *mongo.Collection, s string) User {
-	filter := bson.D{primitive.E{Key: "name", Value: s}}
+	filter := bson.D{primitive.E{Key: "email", Value: s}}
 	var result User
 
 	err := c.FindOne(context.TODO(), filter).Decode(&result)

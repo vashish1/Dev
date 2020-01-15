@@ -19,6 +19,7 @@ type User struct {
 	Email        string
 	PasswordHash string
 	Image        string
+	Token        string
 }
 //profile ....
 type Profile struct{
@@ -156,4 +157,22 @@ func Updateexperience(c *mongo.Collection, o string, s Experience)bool {
 	return true
 }
 
+//UpdateToken updates the user info
+func UpdateToken(c *mongo.Collection,o string,t string)bool{
+	filter := bson.D{
+		{"email", o},
+	}
+	update := bson.D{
+		{
+		"$set",bson.D{{"token",t}},
+		},
+      }
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
+}
 
