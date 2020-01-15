@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type logn struct{
-Email string
-Pass string
+type logn struct {
+	Email string
+	Pass  string
 }
 
 type mockSignup struct {
@@ -53,7 +54,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 //login handles the login credentials
 func login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var  result database.User
+	var result database.User
 	var user logn
 	body, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(body, &user)
@@ -64,24 +65,23 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	ok := database.Findfromuserdb(cl, user.Email, user.Pass)
 	if ok {
-		u:=database.Finddb(cl,user.Email)
+		u := database.Finddb(cl, user.Email)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"name":  u.Name,
 			"email": u.Email,
-			
 		})
 
 		tokenString, err := token.SignedString([]byte("secret"))
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-		    w.Write([]byte(`{"error": "error in token string"}`))
-		    return
+			w.Write([]byte(`{"error": "error in token string"}`))
+			return
 		}
-		result.Token=tokenString
-		result.PasswordHash=""
-		tkn:=database.UpdateToken(cl,u.Email,tokenString)
-		if tkn{
+		result.Token = tokenString
+		result.PasswordHash = ""
+		tkn := database.UpdateToken(cl, u.Email, tokenString)
+		if tkn {
 			json.NewEncoder(w).Encode(result)
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(`{"success": "created token successfully"}`))
@@ -95,7 +95,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 //signup handles the login credentials
 func signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	test:=mockSignup{}
+	test := mockSignup{}
 	var user database.User
 	body, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(body, &test)
@@ -104,83 +104,88 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"error": "body not parsed"}`))
 		return
 	}
-	fmt.Println("test:",test)
-    if test.Password==test.Cpassword{
-    	user=database.Newuser(test.Name,test.Email,test.Password,"")
+	fmt.Println("test:", test)
+	if test.Password == test.Cpassword {
+		user = database.Newuser(test.Name, test.Email, test.Password, "")
 		ok := database.Insertintouserdb(cl, user)
 		if ok {
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(`{"success": "created"}`))
 			return
 		}
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"error": "not created"}`))
-		}
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "Passwords do not match"}`))
+		w.Write([]byte(`{"error": "not created"}`))
 	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "Passwords do not match"}`))
+}
 
 //profile updates the profile
 func profile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	tokenString := r.Header.Get("Authorization")
-	token,_ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
-		} 
+		}
 		return []byte("secret"), nil
 	})
-	var result database.User
+	// var result database.User
+	var name, email string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		result.Name = claims["name"].(string)
-		result.Email = claims["email"].(string)
-		json.NewEncoder(w).Encode(result)
-	} 
-	p := database.Finddb(cl, result.Email)
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	fmt.Println(name, email)
+	p := database.Finddb(cl, email)
 	fmt.Println(p)
-	if p.Name!=""{
-         var pro database.Profile
-	body, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(body, &pro)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "body not parsed"}`))
-		return
-	}
-	pro.Email = p.Email
-	ok := database.Insertprofile(cl1, pro)
-	if ok {
+	if p.Name != "" {
+		var pro database.Profile
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &pro)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"error": "body not parsed"}`))
+			return
+		}
+		pro.Email = p.Email
+		ok := database.Insertprofile(cl1, pro)
+		if ok {
 
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": "created"}`))
-		return
-	}
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": "created"}`))
+			return
+		}
 	}
 	w.WriteHeader(http.StatusBadRequest)
-	w.Write([]byte(`{"error": "Token not verified"}`))	
+	w.Write([]byte(`{"error": "Token not verified"}`))
 
-	}
-	// params := mux.Vars(r)
-	// fmt.Println(params)
+}
 
-	// var pro database.Profile
-	// body, _ := ioutil.ReadAll(r.Body)
-	// err := json.Unmarshal(body, &pro)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	w.Write([]byte(`{"error": "body not parsed"}`))
-	// 	return
-	// }
-	// pro.Email = p.Email
-	// ok := database.Insertprofile(cl1, pro)
-	// if ok {
+// params := mux.Vars(r)
+// fmt.Println(params)
 
-	// 	w.WriteHeader(http.StatusCreated)
-	// 	w.Write([]byte(`{"success": "created"}`))
-	// 	return
-	// }
+// var pro database.Profile
+// body, _ := ioutil.ReadAll(r.Body)
+// err := json.Unmarshal(body, &pro)
+// if err != nil {
+// 	w.WriteHeader(http.StatusBadRequest)
+// 	w.Write([]byte(`{"error": "body not parsed"}`))
+// 	return
+// }
+// pro.Email = p.Email
+// ok := database.Insertprofile(cl1, pro)
+// if ok {
 
+// 	w.WriteHeader(http.StatusCreated)
+// 	w.Write([]byte(`{"success": "created"}`))
+// 	return
+// }
 
 //education updates the education
 func education(w http.ResponseWriter, r *http.Request) {
