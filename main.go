@@ -30,18 +30,21 @@ func main() {
 	r.HandleFunc("/Dev", index)
 	r.HandleFunc("/Dev/login", login).Methods("POST")
 	r.HandleFunc("/Dev/signup", signup).Methods("POST")
-	r.HandleFunc("/Dev/profile/AddEducation/{name}", education).Methods("POST")
-	r.HandleFunc("/Dev/profile/AddExperience/{name}", experience).Methods("POST")
-	r.HandleFunc("/Dev/profile/", profile).Methods("GET", "POST")
+	r.HandleFunc("/Dev/profile/AddEducation", education).Methods("POST")
+	r.HandleFunc("/Dev/profile/AddExperience", experience).Methods("POST")
+	r.HandleFunc("/Dev/profile", profile).Methods("GET", "POST")
+	r.HandleFunc("/Dev/MyProfile/{name}", Myprofile).Methods("GET")
+	r.HandleFunc("/Dev/dashboard/{name}", dashboard).Methods("GET")
+	r.HandleFunc("/Dev/Post",WritePost).Methods("GET","POST")
 	http.Handle("/", r)
 	http.ListenAndServe(":80", nil)
 }
 
-var cl, cl1 *mongo.Collection
+var cl, cl1,cl2 *mongo.Collection
 var c *mongo.Client
 
 func init() {
-	cl, cl1, c = database.Createdb()
+	cl, cl1, cl2, c = database.Createdb()
 }
 
 //index handles the main page
@@ -167,72 +170,211 @@ func profile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// params := mux.Vars(r)
-// fmt.Println(params)
-
-// var pro database.Profile
-// body, _ := ioutil.ReadAll(r.Body)
-// err := json.Unmarshal(body, &pro)
-// if err != nil {
-// 	w.WriteHeader(http.StatusBadRequest)
-// 	w.Write([]byte(`{"error": "body not parsed"}`))
-// 	return
-// }
-// pro.Email = p.Email
-// ok := database.Insertprofile(cl1, pro)
-// if ok {
-
-// 	w.WriteHeader(http.StatusCreated)
-// 	w.Write([]byte(`{"success": "created"}`))
-// 	return
-// }
-
 //education updates the education
 func education(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	fmt.Println(params)
-	p := database.Finddb(cl, params["name"])
-	var edu database.Education
-	body, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(body, &edu)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "body not parsed"}`))
-		return
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
 	}
-	ok := database.Updateeducation(cl1, p.Email, edu)
-	if ok {
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": "created"}`))
-		return
+	fmt.Println(name, email)
+	p := database.Finddb(cl, email)
+	fmt.Println(p)
+	if p.Name != "" {
+		var edu database.Education
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &edu)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"error": "body not parsed"}`))
+			return
+		}
+		ok := database.Updateeducation(cl1, p.Email, edu)
+		if ok {
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": "created"}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "not created"}`))
 	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not created"}`))
 }
 
 //experience updates the experience
 func experience(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	fmt.Println(params)
-	p := database.Finddb(cl, params["name"])
-	var exp database.Experience
-	body, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(body, &exp)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "body not parsed"}`))
-		return
-	}
+	tokenString := r.Header.Get("Authorization")
 
-	ok := database.Updateexperience(cl1, p.Email, exp)
-	if ok {
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	fmt.Println(name, email)
+	p := database.Finddb(cl, email)
+	fmt.Println(p)
+	if p.Name != "" {
+		var exp database.Experience
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &exp)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"error": "body not parsed"}`))
+			return
+		}
+
+		ok := database.Updateexperience(cl1, p.Email, exp)
+		if ok {
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": "created"}`))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "not created"}`))
+
+	}
+}
+
+//Myprofile displays the profile of the user
+func Myprofile(w http.ResponseWriter,r *http.Request){
+	params:=mux.Vars(r)
+	user:=params["name"]
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	fmt.Print(name)
+	p := database.Finddb(cl, email)
+	if p.Name==user{
+		pro:=database.Findprofile(cl1,email)
+		json.NewEncoder(w).Encode(pro)
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(`{"success": "created"}`))
 		return
 	}
 	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not created"}`))
+	w.Write([]byte(`{"error": "not token not matched"}`))
 
+}
+
+func dashboard(w http.ResponseWriter,r *http.Request){
+	params:=mux.Vars(r)
+	user:=params["name"]
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	fmt.Print(name)
+	p := database.Finddb(cl, email)
+	if p.Name==user{
+		pro:=database.Findprofile(cl1,email)
+		json.NewEncoder(w).Encode(pro.Edu)
+		json.NewEncoder(w).Encode(pro.Exp)
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": "Data extracted"}`))
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"error": "not token not matched"}`))
+
+}
+
+func WritePost(w http.ResponseWriter,r *http.Request){
+
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	var set []database.Post
+	set=database.FindPost(cl2)
+    json.NewEncoder(w).Encode(set)
+	if r.Method=="POST"{
+		type p struct{
+			Post string
+		}
+		var Post p
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &Post)
+		var data string
+		data=Post.Post
+		fmt.Println(err)
+        if err==nil{
+          ok:=database.InsertPost(cl2,name,email,data)
+          if ok{
+          	w.WriteHeader(http.StatusCreated)
+				w.Write([]byte(`{"success": "Data extracted"}`))
+			}
+		}
+		http.Redirect(w,r,"/Dev/Post",http.StatusOK)
+	}
 }
