@@ -37,7 +37,7 @@ func main() {
 	r.HandleFunc("/Dev/dashboard/{name}", dashboard).Methods("GET")
 	r.HandleFunc("/Dev/Post",WritePost).Methods("GET","POST")
 	http.Handle("/", r)
-	http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":3000", nil)
 }
 
 var cl, cl1,cl2 *mongo.Collection
