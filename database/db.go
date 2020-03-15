@@ -156,3 +156,38 @@ func FindPost(c *mongo.Collection)[]Post {
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", result)
 	return result
 }
+
+func FindDevelopers(c *mongo.Collection)[]Profile{
+
+	findOptions := options.Find()
+	var result []Profile
+
+	cur, err := c.Find(context.TODO(), bson.D{{}}, findOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Finding multiple documents returns a cursor
+	// Iterating through the cursor allows us to decode documents one at a time
+	for cur.Next(context.TODO()) {
+
+		// create a value into which the single document can be decoded
+		var elem Profile
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		result = append(result, elem)
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the cursor once finished
+	cur.Close(context.TODO())
+
+	fmt.Printf("Found multiple documents (array of pointers): %+v\n", result)
+	return result
+
+}

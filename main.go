@@ -32,10 +32,12 @@ func main() {
 	r.HandleFunc("/Dev/signup", signup).Methods("POST")
 	r.HandleFunc("/Dev/profile/AddEducation", education).Methods("POST")
 	r.HandleFunc("/Dev/profile/AddExperience", experience).Methods("POST")
-	r.HandleFunc("/Dev/profile", profile).Methods("GET", "POST")
-	r.HandleFunc("/Dev/MyProfile/{name}", Myprofile).Methods("GET")
+	r.HandleFunc("/Dev/profile/update", profile).Methods("GET", "POST")
+	r.HandleFunc("/Dev/Profile/{name}", Myprofile).Methods("GET")
 	r.HandleFunc("/Dev/dashboard/{name}", dashboard).Methods("GET")
+	r.HandleFunc("/Dev/Developers",developers).Methods("GET")
 	r.HandleFunc("/Dev/Post",WritePost).Methods("GET","POST")
+	r.HandleFunc("/Dev/Post/comment",comment).Methods("GET")
 	http.Handle("/", r)
 	http.ListenAndServe(":3000", nil)
 }
@@ -376,5 +378,35 @@ func WritePost(w http.ResponseWriter,r *http.Request){
 			}
 		}
 		http.Redirect(w,r,"/Dev/Post",http.StatusOK)
+	}
+}
+
+func developers(w http.ResponseWriter,r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	if name!=""&&email!=""{
+		developer:=database.FindDevelopers(cl1)
+		fmt.Println("developers are",developer)
+		json.NewEncoder(w).Encode(developer)
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": "Data extracted"}`))
+
 	}
 }
