@@ -410,3 +410,29 @@ func developers(w http.ResponseWriter,r *http.Request){
 
 	}
 }
+
+func comment(w http.ResponseWriter,r * http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var name, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		name = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+	if name!=""&&email!=""{
+
+	}
+
+}

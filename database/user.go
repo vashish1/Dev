@@ -21,12 +21,14 @@ type User struct {
 	Image        string
 	Token        string
 }
-//Comment ...........
+//Post ...........
 type Post struct{
 	UserName string
 	Email string
 	Text string
 	Comments []string
+	Likes int
+
 }
 //profile ....
 type Profile struct{
