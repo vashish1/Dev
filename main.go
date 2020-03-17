@@ -24,7 +24,9 @@ type mockSignup struct {
 	Password  string `json:"password"`
 	Cpassword string `json:"cpassword"`
 }
-
+type str struct{
+	Str string
+}
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/Dev", index)
@@ -432,7 +434,7 @@ func comment(w http.ResponseWriter,r * http.Request){
 		email = claims["email"].(string)
 	}
 	if name!=""&&email!=""{
-
+				
 	}
 
 }
