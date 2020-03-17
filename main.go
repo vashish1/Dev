@@ -122,9 +122,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"error": "not created"}`))
-	}
-	w.WriteHeader(http.StatusNotFound)
+	}else{w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte(`{"error": "Passwords do not match"}`))
+	}
 }
 
 //profile updates the profile
