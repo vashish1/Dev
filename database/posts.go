@@ -77,3 +77,34 @@ func FindPost(c *mongo.Collection)[]Post {
 	return result
 }
 
+//UpdateComments updates the Post info
+func UpdateComments(c *mongo.Collection,id int,cmt string)bool{
+	filter := bson.D{
+		{"id", id},
+	}
+	update := bson.D{
+		{
+			"$push",bson.D{{"comments",cmt}},
+		},
+	}
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
+}
+
+func FindComment(c *mongo.Collection,email string,id int)Post{
+	filter := bson.D{
+		{"id", id},
+		{"email",email},
+	}
+	var result Post
+	err := c.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return result
+	}
+	return result
+}

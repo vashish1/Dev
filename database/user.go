@@ -178,21 +178,3 @@ func UpdateToken(c *mongo.Collection,o string,t string)bool{
 	return true
 }
 
-//Updatecomments updates the Post info
-func UpdateComments(c *mongo.Collection,email string,cmt string)bool{
-	filter := bson.D{
-		{"email", email},
-	}
-	update := bson.D{
-		{
-			"$push",bson.D{{"comments",cmt}},
-		},
-	}
-	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		log.Fatal(err)
-		return false
-	}
-	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
-	return true
-}

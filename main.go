@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -16,6 +17,10 @@ import (
 type logn struct {
 	Email string
 	Pass  string
+}
+
+type p struct{
+	Data string
 }
 
 type mockSignup struct {
@@ -38,8 +43,8 @@ func main() {
 	r.HandleFunc("/Dev/Profile/{name}", Myprofile).Methods("GET")
 	r.HandleFunc("/Dev/dashboard/{name}", dashboard).Methods("GET")
 	r.HandleFunc("/Dev/Developers",developers).Methods("GET")
-	r.HandleFunc("/Dev/Post",WritePost).Methods("GET","POST")
-	r.HandleFunc("/Dev/Post/comment",comment).Methods("GET")
+	r.HandleFunc("/Dev/Post",writePost).Methods("GET","POST")
+	r.HandleFunc("/Dev/Post/comment/{id}",comment).Methods("GET","POST")
 	http.Handle("/", r)
 	http.ListenAndServe(":3000", nil)
 }
@@ -338,7 +343,8 @@ func dashboard(w http.ResponseWriter,r *http.Request){
 
 }
 
-func WritePost(w http.ResponseWriter,r *http.Request){
+
+func writePost(w http.ResponseWriter,r *http.Request){
 
 	w.Header().Set("Content-Type", "application/json")
 	tokenString := r.Header.Get("Authorization")
@@ -359,13 +365,8 @@ func WritePost(w http.ResponseWriter,r *http.Request){
 		name = claims["name"].(string)
 		email = claims["email"].(string)
 	}
-	var set []database.Post
-	set=database.FindPost(cl2)
-    json.NewEncoder(w).Encode(set)
 	if r.Method=="POST"{
-		type p struct{
-			Data string
-		}
+		
 		var postdata p
 		body, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(body, &postdata)
@@ -383,16 +384,20 @@ func WritePost(w http.ResponseWriter,r *http.Request){
           	w.WriteHeader(http.StatusCreated)
 				w.Write([]byte(`{"success": "Data extracted"}`))
 			}
+			if okk=database.UpdateUserPostId(cl,email,Post.Id); okk{
+				w.WriteHeader(http.StatusCreated)
+				  w.Write([]byte(`{"success": "Updateduser"}`))
+			 }
+			 if !ok||!okk{
+				w.WriteHeader(http.StatusCreated)
+				w.Write([]byte(`{"fail": "error"}`)) 
+			 }
+		}else{
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"fail": "error"}`))
 		}
-		 if okk=database.UpdateUserPostId(cl,email,Post.Id); okk{
-			w.WriteHeader(http.StatusCreated)
-			  w.Write([]byte(`{"success": "Updateduser"}`))
-		 }
-		 if !ok||!okk{
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"fail": "error"}`)) 
-		 }
-		// http.Redirect(w,r,"/Dev/Post",http.StatusOK)
+		 
+		http.Redirect(w,r,"/Dev/Post",http.StatusOK)
 	}else{
 		Total:=database.FindPost(cl2)
 		json.NewEncoder(w).Encode(Total)
@@ -448,13 +453,31 @@ func comment(w http.ResponseWriter,r * http.Request){
 		return []byte("secret"), nil
 	})
 	// var result database.User
-	var name, email string
+	var _, email string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		name = claims["name"].(string)
+		_ = claims["name"].(string)
 		email = claims["email"].(string)
 	}
-	if name!=""&&email!=""{
-				
+	params:=mux.Vars(r)
+	pro:=params["id"]
+    id,_:=strconv.Atoi(pro)
+	if r.Method=="POST"{
+		var x p
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &x)
+        if err==nil{
+		   ok:= database.UpdateComments(cl2,id,x.Data)
+		   if ok{
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": "Updatedcomments"}`))
+		   }
+		}
+		http.Redirect(w,r,"/Dev/Post/comment",302)
+	}else{
+			Total:=database.FindComment(cl2,email,id)
+			json.NewEncoder(w).Encode(Total)
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": "Discussion Fetched"}`))
 	}
-
+     
 }
