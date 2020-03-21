@@ -364,23 +364,43 @@ func WritePost(w http.ResponseWriter,r *http.Request){
     json.NewEncoder(w).Encode(set)
 	if r.Method=="POST"{
 		type p struct{
-			Post string
+			Data string
 		}
-		var Post p
+		var postdata p
 		body, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(body, &Post)
-		var data string
-		data=Post.Post
+		err := json.Unmarshal(body, &postdata)
+		var Post database.Post
+		Post.Id=database.PostId()
+        Post.Email=email
+		Post.UserName=name
+		Post.Text=postdata.Data
 		fmt.Println(err)
+		
+		var ok,okk bool
         if err==nil{
-          ok:=database.InsertPost(cl2,name,email,data)
+          ok=database.InsertPost(cl2,Post)
           if ok{
           	w.WriteHeader(http.StatusCreated)
 				w.Write([]byte(`{"success": "Data extracted"}`))
 			}
 		}
-		http.Redirect(w,r,"/Dev/Post",http.StatusOK)
+		 if okk=database.UpdateUserPostId(cl,email,Post.Id); okk{
+			w.WriteHeader(http.StatusCreated)
+			  w.Write([]byte(`{"success": "Updateduser"}`))
+		 }
+		 if !ok||!okk{
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"fail": "error"}`)) 
+		 }
+		// http.Redirect(w,r,"/Dev/Post",http.StatusOK)
+	}else{
+		Total:=database.FindPost(cl2)
+		json.NewEncoder(w).Encode(Total)
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": "Total posts Fetched"}`))
+
 	}
+
 }
 
 func developers(w http.ResponseWriter,r *http.Request){

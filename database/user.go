@@ -20,16 +20,9 @@ type User struct {
 	PasswordHash string
 	Image        string
 	Token        string
+	PostId       []int
 }
-//Post ...........
-type Post struct{
-	UserName string
-	Email string
-	Text string
-	Comments []string
-	Likes int
 
-}
 //profile ....
 type Profile struct{
 	Email string
@@ -69,7 +62,7 @@ Description string
 func Newuser(name string, email string, password string, img string) User {
 
 	Password := SHA256ofstring(password)
-	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: img}
+	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: img,PostId: []int{}}
 	return U
 }
 

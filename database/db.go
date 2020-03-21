@@ -66,24 +66,6 @@ func Insertprofile(usercollection *mongo.Collection, p Profile) bool {
 	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 	return true
 }
-//InsertPost inserts the Post data into the database
-func InsertPost(collection *mongo.Collection,name,email,text string) bool {
-
-	post:=Post{
-		UserName:name,
-		Email:email,
-		Text:text,
-		Comments:[]string{},
-	}
-	insertResult, err := collection.InsertOne(context.TODO(), post)
-	if err != nil {
-		log.Print(err)
-		return false
-	}
-
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
-	return true
-}
 //Findfromuserdb finds the required data
 func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool {
 	filter := bson.D{primitive.E{Key: "email", Value: st}}
@@ -124,39 +106,6 @@ func Finddb(c *mongo.Collection, s string) User {
 	return result
 }
 
-func FindPost(c *mongo.Collection)[]Post {
-	findOptions := options.Find()
-	var result []Post
-
-	cur, err := c.Find(context.TODO(), bson.D{{}}, findOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Finding multiple documents returns a cursor
-	// Iterating through the cursor allows us to decode documents one at a time
-	for cur.Next(context.TODO()) {
-
-		// create a value into which the single document can be decoded
-		var elem Post
-		err := cur.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		result = append(result, elem)
-	}
-	if err := cur.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	// Close the cursor once finished
-	cur.Close(context.TODO())
-
-	fmt.Printf("Found multiple documents (array of pointers): %+v\n", result)
-	return result
-}
-
 func FindDevelopers(c *mongo.Collection)[]Profile{
 
 	findOptions := options.Find()
@@ -190,4 +139,18 @@ func FindDevelopers(c *mongo.Collection)[]Profile{
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", result)
 	return result
 
+}
+
+func UpdateUserPostId(c *mongo.Collection,email string,id int)bool{
+	filter := bson.D{{"email", email}}
+	update :=bson.M{
+		"$push":bson.M{"postId":id},
+	}
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
 }
