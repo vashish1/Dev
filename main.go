@@ -45,6 +45,8 @@ func main() {
 	r.HandleFunc("/Dev/Developers",developers).Methods("GET")
 	r.HandleFunc("/Dev/Post",writePost).Methods("GET","POST")
 	r.HandleFunc("/Dev/Post/comment/{id}",comment).Methods("GET","POST")
+	r.HandleFunc("/like/{id}",like).Methods("GET")
+	r.HandleFunc("/dislike/{id}",dislike).Methods("GET")
 	http.Handle("/", r)
 	http.ListenAndServe(":3000", nil)
 }
@@ -476,8 +478,74 @@ func comment(w http.ResponseWriter,r * http.Request){
 	}else{
 			Total:=database.FindComment(cl2,email,id)
 			json.NewEncoder(w).Encode(Total)
-			w.WriteHeader(http.StatusCreated)
+			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success": "Discussion Fetched"}`))
 	}
      
+}
+
+func like(w http.ResponseWriter,r * http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var _, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		_ = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+    params:=mux.Vars(r)
+	pro:=params["id"]
+	id,_:=strconv.Atoi(pro)
+	ok:=database.UpdateLikes(cl2,email,id)
+	if ok{
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"success": "updated"}`))
+	}else{
+		w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"fail": "error"}`))
+	}
+}
+
+func dislike(w http.ResponseWriter,r * http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	tokenString := r.Header.Get("Authorization")
+
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	fmt.Println("token", tokenString)
+
+	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method")
+		}
+		return []byte("secret"), nil
+	})
+	// var result database.User
+	var _, email string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		_ = claims["name"].(string)
+		email = claims["email"].(string)
+	}
+    params:=mux.Vars(r)
+	pro:=params["id"]
+	id,_:=strconv.Atoi(pro)
+	ok:=database.UpdateDisLikes(cl2,email,id)
+	if ok{
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"success": "updated"}`))
+	}else{
+		w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"fail": "error"}`))
+	}
 }

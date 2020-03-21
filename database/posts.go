@@ -21,6 +21,7 @@ type Post struct{
 	Text string
 	Comments []string
 	Likes int 
+	Dislikes int
 }
 //PostId ..........
 func PostId()int{
@@ -107,4 +108,43 @@ func FindComment(c *mongo.Collection,email string,id int)Post{
 		return result
 	}
 	return result
+}
+
+//UpdateLikes ........
+func UpdateLikes(c *mongo.Collection,email string,id int)bool{
+	filter := bson.D{
+		{"id", id},
+		{"email",email},
+	}
+	update:=bson.D{
+		{
+			"$inc",bson.D{{"likes",1}},},
+	}
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
+}
+
+//UpdateDisLikes ........
+func UpdateDisLikes(c *mongo.Collection,email string,id int)bool{
+	filter := bson.D{
+		{"id", id},
+		{"email",email},
+	}
+	update:=bson.D{
+		{
+			"$inc",bson.D{{"dislikes",1}},},
+	}
+	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
+	return true
+
 }
