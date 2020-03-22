@@ -522,6 +522,7 @@ func dislike(w http.ResponseWriter,r * http.Request){
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	
 	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -548,4 +549,4 @@ func dislike(w http.ResponseWriter,r * http.Request){
 		w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"fail": "error"}`))
 	}
-}
+} 
