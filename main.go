@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Dev/database"
+	"github.com/vashish1/Dev/database"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -32,6 +32,7 @@ type mockSignup struct {
 type str struct{
 	Str string
 }
+
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/Dev", index)
@@ -48,7 +49,7 @@ func main() {
 	r.HandleFunc("/like/{id}",like).Methods("GET")
 	r.HandleFunc("/dislike/{id}",dislike).Methods("GET")
 	http.Handle("/", r)
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":8000", nil)
 }
 
 var cl, cl1,cl2 *mongo.Collection
@@ -392,7 +393,7 @@ func writePost(w http.ResponseWriter,r *http.Request){
 			 }
 			 if !ok||!okk{
 				w.WriteHeader(http.StatusCreated)
-				w.Write([]byte(`{"fail": "error"}`)) 
+				w.Write([]byte(`{"error": "post not created"}`)) 
 			 }
 		}else{
 			w.WriteHeader(http.StatusCreated)
