@@ -29,6 +29,7 @@ type mockSignup struct {
 	Password  string `json:"password"`
 	Cpassword string `json:"cpassword"`
 }
+
 type str struct{
 	Str string
 }
