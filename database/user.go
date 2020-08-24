@@ -25,6 +25,7 @@ type User struct {
 
 //profile ....
 type Profile struct{
+	UUID string
 	Email string
 	Status string
 	Org string

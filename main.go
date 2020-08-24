@@ -1,38 +1,22 @@
 package main
 
 import (
-	"github.com/vashish1/Dev/database"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/vashish1/Dev/database"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type logn struct {
-	Email string
-	Pass  string
-}
-
-type p struct{
-	Data string
-}
-
-type mockSignup struct {
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Cpassword string `json:"cpassword"`
-}
-
-type str struct{
-	Str string
-}
+var secret=os.Getenv("BlockKey")
 
 func main() {
 	r := mux.NewRouter()
@@ -42,8 +26,8 @@ func main() {
 	r.HandleFunc("/Dev/profile/AddEducation", education).Methods("POST")
 	r.HandleFunc("/Dev/profile/AddExperience", experience).Methods("POST")
 	r.HandleFunc("/Dev/profile/update", profile).Methods("GET", "POST")
-	r.HandleFunc("/Dev/Profile/{name}", Myprofile).Methods("GET")
-	r.HandleFunc("/Dev/dashboard/{name}", dashboard).Methods("GET")
+	r.HandleFunc("/Dev/Profile/{id}", Myprofile).Methods("GET")
+	r.HandleFunc("/Dev/Dashboard", dashboard).Methods("GET")
 	r.HandleFunc("/Dev/Developers",developers).Methods("GET")
 	r.HandleFunc("/Dev/Post",writePost).Methods("GET","POST")
 	r.HandleFunc("/Dev/Post/comment/{id}",comment).Methods("GET","POST")
@@ -70,45 +54,48 @@ func index(w http.ResponseWriter, r *http.Request) {
 //login handles the login credentials
 func login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var result database.User
+	var result LoginResponse
 	var user logn
 	body, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(body, &user)
+
+	//Handles the error whhile parsing the Request JSON
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "body not parsed"}`))
+		w.Write([]byte(`{"error": "Body not parsed"}`))
 		return
 	}
-	ok := database.Findfromuserdb(cl, user.Email, user.Pass)
+	
+	//If user Exists in DB, Creating Token for response else returning error
+	ok := database.Findfromuserdb(cl, user.Email, user.Password)
 	if ok {
 		u := database.Finddb(cl, user.Email)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"name":  u.Name,
-			"email": u.Email,
+			"uid": u.UUID,
 		})
 
-		tokenString, err := token.SignedString([]byte("secret"))
+		tokenString, err := token.SignedString([]byte(secret))
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"error": "error in token string"}`))
+			w.Write([]byte(`{"error": "Error While Creating Token"}`))
 			return
 		}
 		result.Token = tokenString
-		result.PasswordHash = ""
+		result.Success=true
 		tkn := database.UpdateToken(cl, u.Email, tokenString)
 		if tkn {
 			json.NewEncoder(w).Encode(result)
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"success": "created token successfully"}`))
+			w.WriteHeader(200)
 			return
 		}
 	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not created"}`))
+	w.WriteHeader(400)
+	w.Write([]byte(`{"error": "Login denied"}`))
 }
 
-//signup handles the login credentials
+//signup handles the signup of a new user in the DevConnect
 func signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	test := mockSignup{}
@@ -143,7 +130,6 @@ func profile(w http.ResponseWriter, r *http.Request) {
 	
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 	fmt.Println("token", tokenString)
-
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -152,15 +138,15 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		return []byte("secret"), nil
 	})
 	// var result database.User
-	var name, email string
+	var _, uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		name = claims["name"].(string)
-		email = claims["email"].(string)
+		_ = claims["name"].(string)
+		uid = claims["uid"].(string)
 	}
-	fmt.Println(name, email)
-	p := database.Finddb(cl, email)
-	fmt.Println(p)
-	if p.Name != "" {
+
+	p := database.Finddb(cl, uid)
+
+	if p.UUID == uid {
 		var pro database.Profile
 		body, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(body, &pro)
@@ -276,7 +262,7 @@ func experience(w http.ResponseWriter, r *http.Request) {
 //Myprofile displays the profile of the user
 func Myprofile(w http.ResponseWriter,r *http.Request){
 	params:=mux.Vars(r)
-	user:=params["name"]
+	id:=params["id"]
 	w.Header().Set("Content-Type", "application/json")
 	tokenString := r.Header.Get("Authorization")
 
@@ -288,62 +274,57 @@ func Myprofile(w http.ResponseWriter,r *http.Request){
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
-		return []byte("secret"), nil
+		return []byte(secret), nil
 	})
 	// var result database.User
-	var name, email string
+	var _, uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		name = claims["name"].(string)
-		email = claims["email"].(string)
+		_ = claims["name"].(string)
+		uid = claims["uid"].(string)
 	}
-	fmt.Print(name)
-	p := database.Finddb(cl, email)
-	if p.Name==user{
-		pro:=database.Findprofile(cl1,email)
+	p := database.Finddb(cl, id)
+	if p.UUID==id{
+		pro:=database.Findprofile(cl1,uid)
 		json.NewEncoder(w).Encode(pro)
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": "created"}`))
+		w.WriteHeader(200)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not token not matched"}`))
+	w.WriteHeader(401)
+	w.Write([]byte(`{"error": "User Unauthorized"}`))
 
 }
 
 func dashboard(w http.ResponseWriter,r *http.Request){
-	params:=mux.Vars(r)
-	user:=params["name"]
 	w.Header().Set("Content-Type", "application/json")
-	tokenString := r.Header.Get("Authorization")
 
+	tokenString := r.Header.Get("Authorization")
+   
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 	fmt.Println("token", tokenString)
-
+    var result Dasboard
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
-		return []byte("secret"), nil
+		return []byte(secret), nil
 	})
 	// var result database.User
-	var name, email string
+	var uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		name = claims["name"].(string)
-		email = claims["email"].(string)
+		_ = claims["name"].(string)
+		uid = claims["uid"].(string)
 	}
-	fmt.Print(name)
-	p := database.Finddb(cl, email)
-	if p.Name==user{
-		pro:=database.Findprofile(cl1,email)
-		json.NewEncoder(w).Encode(pro.Edu)
-		json.NewEncoder(w).Encode(pro.Exp)
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": "Data extracted"}`))
+	p := database.Finddb(cl, uid)
+	if p.UUID!=""{
+		pro:=database.Findprofile(cl1,uid)
+		result.Education=pro.Edu
+		result.Experience=pro.Exp
+		w.WriteHeader(http.StatusOK)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(`{"error": "not token not matched"}`))
+	w.WriteHeader(401)
+	w.Write([]byte(`{"error": "User Unauthorised"}`))
 
 }
 

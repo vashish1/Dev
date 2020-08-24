@@ -84,7 +84,7 @@ func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool 
 
 //Findprofile .............
 func Findprofile(c *mongo.Collection,e string) Profile{
-	filter := bson.D{primitive.E{Key: "email", Value: e}}
+	filter := bson.D{primitive.E{Key: "uuid", Value: e}}
 	var result Profile
 
 	err := c.FindOne(context.TODO(), filter).Decode(&result)
@@ -96,7 +96,7 @@ func Findprofile(c *mongo.Collection,e string) Profile{
 
 //Finddb finds the required database
 func Finddb(c *mongo.Collection, s string) User {
-	filter := bson.D{primitive.E{Key: "email", Value: s}}
+	filter := bson.D{primitive.E{Key: "uuid", Value: s}}
 	var result User
 
 	err := c.FindOne(context.TODO(), filter).Decode(&result)

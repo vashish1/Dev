@@ -18,52 +18,159 @@ This API uses `POST` request to communicate and HTTP [response codes](https://en
 ### Response Codes
 ```
 200: Success
+201: Created
 400: Bad request
 401: Unauthorized
 404: Cannot be found
 405: Method not allowed
-50X: Server Error
+50x: Server Error
+```
+### Error and Success Message Example
+
+```json
+  {
+    "error":"message" 
+  }
+  
+  {
+      "success":"message",
+      "any-data-type": "data-sent-in response"  //w.r.t the API
+  }
 ```
 
+## SignUp
+
+**You send:**  You send the details required to signup.
+
+**You get:** An `Error-Message` or a `Success-Message` depending on the status of the account created on DevConnect
+
+**Endpoint:** 
+     /Dev/signup
+
+**Request:**
+`POST HTTP/1.1`
+```json
+Accept: application/json
+Content-Type: application/json
+Content-Length: xy
+
+{   
+    "name": "abc",
+    "email": "foo",
+    "password": "1234567",
+    "cpassword": "1234567"
+}
+```
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "success":"created",
+}
+```
 
 ## Login
 **You send:**  Your  login credentials.
-**You get:** An `API-Token` with wich you can make further actions.
+
+**You get:** An `API-Token` and a `Success-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/login
 
 **Request:**
+`POST HTTP/1.1`
 ```json
-POST /login HTTP/1.1
 Accept: application/json
 Content-Type: application/json
 Content-Length: xy
 
 {
-    "username": "foo",
+    "email": "foo",
     "password": "1234567" 
 }
 ```
 **Successful Response:**
 ```json
 HTTP/1.1 200 OK
-Server: My RESTful API
 Content-Type: application/json
 Content-Length: xy
 
 {
-   "apitoken": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "expirationDate": "2018-02-13T15:31:55.559Z"
+   "success":true,
+   "token": "e3b0...................",
 }
 ```
-**Failed Response:**
+## Get Profile
+
+**You send:**  unique user ID.
+
+**You get:** A `Profile data` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/Profile/{id}
+
+**Request Param**
+   `GET HTTP/1.1` 
+   ```
+   id
+   ```
+
+
+**Successful Response:**
 ```json
-HTTP/1.1 401 Unauthorized
-Server: My RESTful API
+HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: xy
 
 {
-    "code": 120,
-    "message": "invalid crendetials",
-    "resolve": "The username or password is not correct."
+   
+}
+```
+
+## Dashboard
+
+**You send:**  nothing
+
+**You get:** A `Profile data  i.e the Education and Experience` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/Dashboard
+
+**Request**
+   `GET HTTP/1.1` 
+    
+    Nil
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   
+}
+```
+
+
+
+
+
+
+
+
+
+
+**Failed Response for All API's:**
+```json 
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "error":"message"
 }
 ``` 
