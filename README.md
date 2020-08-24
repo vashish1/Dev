@@ -11,10 +11,10 @@
 
 #### Version of API :  V1.0
     
-# API Documentation Example
-This API uses `POST` request to communicate and HTTP [response codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) to indenticate status and errors. All responses come in standard JSON. All requests must include a `content-type` of `application/json` and the body must be valid JSON.
+# API Documentation
+ All responses come in standard JSON. All requests must include a `content-type` of `application/json` and the body must be valid JSON.
 
-## Response Codes 
+
 ### Response Codes
 ```
 200: Success
@@ -152,14 +152,138 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-   
+    
 }
 ```
 
+## Update Profile
+
+**You send:**  The data to be updated in the profile.
+
+**You get:** A `Success-Message` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/profile/update
+
+**Request**
+   `POST HTTP/1.1` 
 
 
+    
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "success":"updated"
+}
+```
+
+## Update Education
+
+**You send:**  The data to be added or updated in the education.
+
+**You get:** A `Success-Message` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/profile/add/Experience
+
+**Request**
+   `POST HTTP/1.1` 
 
 
+    
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "success":"updated"
+}
+```
+## Update Experience
+
+**You send:**  The data to be added or updated in the experience.
+
+**You get:** A `Success-Message` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/profile/add/Experience
+
+**Request**
+   `POST HTTP/1.1` 
+
+
+    
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "success":"updated"
+}
+```
+## Developers Data
+
+**You send:**  Nothing
+
+**You get:** The Data of all the developers.
+
+**Endpoint:** 
+     /Dev/Developers
+
+**Request**
+   `GET HTTP/1.1` 
+    
+    nil
+
+    
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   
+}
+```
+## Create Post
+
+**You send:**  The data to be posted as Post.
+
+**You get:** The Data of all the developers.
+
+**Endpoint:** 
+     /Dev/Developers
+
+**Request**
+   `GET HTTP/1.1` 
+    
+    nil
+
+    
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   
+}
+```
 
 
 
