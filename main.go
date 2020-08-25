@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var secret = os.Getenv("BlockKey")
+var secret = os.Getenv("blockkey")
 var Port = os.Getenv("PORT")
 
 func main() {
@@ -32,8 +32,8 @@ func main() {
 	r.HandleFunc("/Dev/Developers", developers).Methods("GET")
 	r.HandleFunc("/Dev/Post", writePost).Methods("GET","POST")
 	r.HandleFunc("/Dev/Post/comment/{id}", comment).Methods("GET")
-	r.HandleFunc("/like/{id}", like).Methods("GET")
-	r.HandleFunc("/dislike/{id}", dislike).Methods("GET")
+	r.HandleFunc("/Dev/like/{id}", like).Methods("GET")
+	r.HandleFunc("/Dev/dislike/{id}", dislike).Methods("GET")
 	http.Handle("/", r)
 	http.ListenAndServe(":"+Port, nil)
 }
@@ -70,7 +70,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	//If user Exists in DB, Creating Token for response else returning error
 	ok := database.Findfromuserdb(cl, user.Email, user.Password)
 	if ok {
-		u := database.Finddb(cl, user.Email)
+		u := database.FinddbByEmail(cl, user.Email)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"name": u.Name,
 			"uid":  u.UUID,
@@ -268,13 +268,11 @@ func Myprofile(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
 		return []byte(secret), nil
 	})
-	// var result database.User
 	var _, uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		_ = claims["name"].(string)
@@ -301,13 +299,11 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("token", tokenString)
 	var result Dasboard
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
 		return []byte(secret), nil
 	})
-	// var result database.User
 	var uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		_ = claims["name"].(string)
@@ -323,7 +319,6 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
-
 }
 
 func writePost(w http.ResponseWriter, r *http.Request) {
@@ -363,14 +358,13 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 				okk = database.UpdateUserPostId(cl, user.Email, Post.Id)
 				if !ok || !okk {
 					w.WriteHeader(http.StatusCreated)
-					w.Write([]byte(`{"error": "post not created"}`))
+					w.Write([]byte(`{"error": "Post not created"}`))
 					return
 				}
 					w.WriteHeader(http.StatusOK)
 					w.Write([]byte(`{"success": "created"}`))
 					return
-				}
-				http.Redirect(w, r, "/Dev/Post", http.StatusOK)
+			}
 			}else{
 			Total := database.FindPost(cl2)
 			json.NewEncoder(w).Encode(Total)
@@ -378,7 +372,6 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 			return
 		 }
 	}
-	
 	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
 }

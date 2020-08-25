@@ -49,6 +49,7 @@
 
 **Request:**
 `POST HTTP/1.1`
+
 ```json
 Accept: application/json
 Content-Type: application/json
@@ -262,17 +263,118 @@ Content-Length: xy
 
 **You send:**  The data to be posted as Post.
 
-**You get:** The Data of all the developers.
+**You get:**   A `Success-Message` or a `Error-Message` with which you can make further actions also the Total Posts .
+
 
 **Endpoint:** 
-     /Dev/Developers
+     /Dev/Post
 
 **Request**
-   `GET HTTP/1.1` 
+   `GET , POST HTTP/1.1`  
     
-    nil
+
 
     
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+for POST Request:
+
+{
+   "success":"created"
+}
+
+for GET Request:
+
+{
+
+}
+
+```
+
+## Comment on Post
+
+**You send:**  The `id` of the post and the comment.
+
+**You get:**   A `All comments on the post` or a `Error-Message` with which you can make further actions  .
+
+
+**Endpoint:** 
+     /Dev/Post/comment/{id}
+
+**Request Param**
+   `GET HTTP/1.1`  
+    
+    id : ID of the Post
+
+**Request Body**
+
+```json
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "data":"comment"
+}
+```
+  
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+
+}
+
+```
+## Like Post
+
+**You send:**  Post ID.
+
+**You get:** A `Success-Message` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/like/{id}
+
+**Request Param**
+   `GET HTTP/1.1` 
+   ```
+   id : ID of the Post
+   ```
+
+
+**Successful Response:**
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
+
+{
+   "success":"updated"
+}
+```
+
+## Dislike Post
+
+**You send:**  Post ID.
+
+**You get:** A `Success-Message` or a `Error-Message` with which you can make further actions.
+
+**Endpoint:** 
+     /Dev/dislike/{id}
+
+**Request Param**
+   `GET HTTP/1.1` 
+   ```
+   id : ID of the Post 
+   ```
+
 
 **Successful Response:**
 ```json
@@ -284,8 +386,6 @@ Content-Length: xy
    
 }
 ```
-
-
 
 
 

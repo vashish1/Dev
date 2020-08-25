@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DbURL=os.Getenv("DbURL")
+var DbURL=os.Getenv("MongoUrl")
 //Createdb creates a database
 func Createdb() (*mongo.Collection, *mongo.Collection, *mongo.Collection, *mongo.Client) {
 
@@ -155,4 +155,16 @@ func UpdateUserPostId(c *mongo.Collection,email string,id int)bool{
 	}
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return true
+}
+
+//Finddb finds the required database
+func FinddbByEmail(c *mongo.Collection, s string) User {
+	filter := bson.D{primitive.E{Key: "email", Value: s}}
+	var result User
+
+	err := c.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		return result
+	}
+	return result
 }
