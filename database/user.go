@@ -14,50 +14,50 @@ import (
 
 //User ......
 type User struct {
-	UUID         string
-	Name         string
-	Email        string
-	PasswordHash string
-	Image        string
-	Token        string
-	PostId       []int
+	UUID         string `json:"uuid,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Email        string `json:"email,omitempty"`
+	PasswordHash string `json:"password_hash,omitempty"`
+	Image        string `json:"image,omitempty"`
+	Token        string `json:"token,omitempty"`
+	PostId       []int  `json:"post_id,omitempty"`
 }
 
 //profile ....
-type Profile struct{
-	UUID string
-	Email string
-	Name string
-	Status string
-	Org string
-	Website string
-	Location string
-	Skills []string
-	Gitname string
-	Bio string
-    Social map[string]string
-	Edu []Education
-	Exp []Experience
+type Profile struct {
+	UUID     string            `json:"uuid,omitempty"`
+	Email    string            `json:"email,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	Status   string            `json:"status,omitempty"`
+	Org      string            `json:"org,omitempty"`
+	Website  string            `json:"website,omitempty"`
+	Location string            `json:"location,omitempty"`
+	Skills   []string          `json:"skills,omitempty"`
+	Gitname  string            `json:"gitname,omitempty"`
+	Bio      string            `json:"bio,omitempty"`
+	Social   map[string]string `json:"social,omitempty"`
+	Edu      []Education       `json:"edu,omitempty"`
+	Exp      []Experience      `json:"exp,omitempty"`
 }
 
 //education .....
-type Education struct{
-	School string
-	Degree string
-	Field string
-	From string
-	To string
-	Achievemets string
+type Education struct {
+	School      string `json:"school,omitempty"`
+	Degree      string `json:"degree,omitempty"`
+	Field       string `json:"field,omitempty"`
+	From        string `json:"from,omitempty"`
+	To          string `json:"to,omitempty"`
+	Achievemets string `json:"achievemets,omitempty"`
 }
 
 //experience ....
-type Experience struct{
-Title string
-Org string
-Location string
-From string
-To string
-Description string
+type Experience struct {
+	Title       string `json:"title,omitempty"`
+	Org         string `json:"org,omitempty"`
+	Location    string `json:"location,omitempty"`
+	From        string `json:"from,omitempty"`
+	To          string `json:"to,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 //Newuser .....

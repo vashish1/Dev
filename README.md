@@ -75,6 +75,7 @@ Content-Length: xy
 ```
 
 ## Login
+
 **You send:**  Your  login credentials.
 
 **You get:** An `API-Token` and a `Success-Message` with which you can make further actions.
@@ -94,6 +95,7 @@ Content-Length: xy
     "password": "1234567" 
 }
 ```
+
 **Successful Response:**
 ```json
 HTTP/1.1 200 OK
@@ -117,7 +119,7 @@ Content-Length: xy
 **Request Param**
    `GET HTTP/1.1` 
    ```
-   id
+   id  : Unique ID of the user 
    ```
 
 
@@ -128,7 +130,37 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-   
+   "uuid":"",
+   "email":"",
+   "name":"",
+   "status":"",
+   "org":"",
+   "website":"",
+   "location":"",
+   "skills":[],
+   "gitname":"",
+   "bio":"",
+   "social":{},
+   "edu":[
+            {
+            "school":"",
+            "degree":"",
+            "fields":"",
+            "from":"",
+            "to":"",
+            "achievements":""
+            }
+        ],
+   "exp":[
+            {
+            "title":"",
+            "org":"",
+            "location":"",
+            "from":"",
+            "to":"",
+            "description":""
+            }
+       ]
 }
 ```
 
@@ -153,7 +185,27 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-    
+    "name":"",
+    "education":[
+            {
+               "school":"",
+               "degree":"",
+               "fields":"",
+               "from":"",
+               "to":"",
+               "achievements":""
+            }
+          ],
+    "experience":[
+             {
+               "title":"",
+               "org":"",
+               "location":"",
+               "from":"",
+               "to":"",
+               "description":""
+            }
+          ]   
 }
 ```
 
@@ -168,9 +220,28 @@ Content-Length: xy
 
 **Request**
    `POST HTTP/1.1` 
+```json
+Accept: application/json
+Content-Type: application/json
+Content-Length: xy
 
-
-    
+{
+    "status":"",
+    "org":"",
+    "website":"",
+    "location":"",
+    "skills":[],
+    "gitname":"",
+    "bio":"",
+    "social":{
+       "twitter":"",
+       "facebook":"",
+       "linkedin":"",
+       "instagram":"",
+       "youtube":""
+             }
+}
+```
 
 **Successful Response:**
 ```json
@@ -194,9 +265,19 @@ Content-Length: xy
 
 **Request**
    `POST HTTP/1.1` 
-
-
-    
+```json
+Accept: application/json
+Content-Type: application/json
+Content-Length: xy
+ {
+    "school":"",
+    "degree":"",
+    "fields":"",
+    "from":"",
+    "to":"",
+    "achievements":""
+ }
+```
 
 **Successful Response:**
 ```json
@@ -208,6 +289,7 @@ Content-Length: xy
    "success":"updated"
 }
 ```
+
 ## Update Experience
 
 **You send:**  The data to be added or updated in the experience.
@@ -219,9 +301,19 @@ Content-Length: xy
 
 **Request**
    `POST HTTP/1.1` 
-
-
-    
+```json
+Accept: application/json
+Content-Type: application/json
+Content-Length: xy
+ {
+    "title":"",
+    "org":"",
+    "location":"",
+    "from":"",
+    "to":"",
+    "description":""
+ }
+``` 
 
 **Successful Response:**
 ```json
@@ -233,6 +325,7 @@ Content-Length: xy
    "success":"updated"
 }
 ```
+
 ## Developers Data
 
 **You send:**  Nothing
@@ -247,18 +340,58 @@ Content-Length: xy
     
     nil
 
-    
-
 **Successful Response:**
 ```json
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: xy
 
-{
-   
-}
+[
+  {
+    "uid":"",
+    "name":"",
+    "email":"",
+    "status":"",
+    "org":"",
+    "website":"",
+    "location":"",
+    "skills":[],
+    "gitname":"",
+    "bio":"",
+    "social":{
+       "twitter":"",
+       "facebook":"",
+       "linkedin":"",
+       "instagram":"",
+       "youtube":""
+             },
+    "edu":[
+            {
+               "school":"",
+               "degree":"",
+               "fields":"",
+               "from":"",
+               "to":"",
+               "achievements":""
+            }
+          ],
+    "exp":[
+             {
+               "title":"",
+               "org":"",
+               "location":"",
+               "from":"",
+               "to":"",
+               "description":""
+            }
+          ]      
+  },
+  {
+     .....
+  }
+]
 ```
+
 ## Create Post
 
 **You send:**  The data to be posted as Post.
@@ -271,10 +404,15 @@ Content-Length: xy
 
 **Request**
    `GET , POST HTTP/1.1`  
-    
+```json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: xy
 
-
-    
+   {
+      "text":""
+   }
+``` 
 
 **Successful Response:**
 ```json
@@ -290,10 +428,20 @@ for POST Request:
 
 for GET Request:
 
-{
-
-}
-
+[
+   {
+      "id":"",
+      "username":"",
+      "email":"",
+      "text":"",
+      "comment":[],
+      "likes": 0,  
+      "dislikes": 0
+   }
+   {
+      ....
+   }
+]
 ```
 
 ## Comment on Post
@@ -318,7 +466,7 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-   "data":"comment"
+   "text":"comment"
 }
 ```
   
@@ -328,11 +476,16 @@ HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: xy
 
-{
+//list of comments
+[
+   "hgfdcvbn",
+   "huytfvbjk",
+   ...
 
-}
+]
 
 ```
+
 ## Like Post
 
 **You send:**  Post ID.
@@ -347,7 +500,6 @@ Content-Length: xy
    ```
    id : ID of the Post
    ```
-
 
 **Successful Response:**
 ```json
@@ -375,7 +527,6 @@ Content-Length: xy
    id : ID of the Post 
    ```
 
-
 **Successful Response:**
 ```json
 HTTP/1.1 200 OK
@@ -383,14 +534,14 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-   
+   "success": "updated"
 }
 ```
 
-
-
 **Failed Response for All API's:**
+
 ```json 
+HTTP/1.1 400 Bad Request
 Content-Type: application/json
 Content-Length: xy
 

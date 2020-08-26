@@ -14,15 +14,16 @@ import (
 )
 
 //Post ...........
-type Post struct{
-	Id int
-	UserName string
-	Email string
-	Text string
-	Comments []string
-	Likes int 
-	Dislikes int
+type Post struct {
+	Id       int      `json:"id,omitempty"`
+	Username string   `json:"username,omitempty"`
+	Email    string   `json:"email,omitempty"`
+	Text     string   `json:"text,omitempty"`
+	Comments []string `json:"comments,omitempty"`
+	Likes    int      `json:"likes,omitempty"`
+	Dislikes int      `json:"dislikes,omitempty"`
 }
+
 //PostId ..........
 func PostId()int{
 	rand.Seed(time.Now().UnixNano())
@@ -97,7 +98,7 @@ func UpdateComments(c *mongo.Collection,id int,cmt string)bool{
 	return true
 }
 
-func FindComment(c *mongo.Collection,email string,id int)Post{
+func FindComment(c *mongo.Collection,email string,id int)[]string{
 	filter := bson.D{
 		{"id", id},
 		{"email",email},
@@ -105,9 +106,9 @@ func FindComment(c *mongo.Collection,email string,id int)Post{
 	var result Post
 	err := c.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		return result
+		return result.Comments
 	}
-	return result
+	return []string{}
 }
 
 //UpdateLikes ........

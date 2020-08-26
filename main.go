@@ -27,7 +27,7 @@ func main() {
 	r.HandleFunc("/Dev/profile/add/Education", addEducation).Methods("POST")
 	r.HandleFunc("/Dev/profile/add/Experience", addExperience).Methods("POST")
 	r.HandleFunc("/Dev/profile/update", updateProfile).Methods("POST")
-	r.HandleFunc("/Dev/Profile/{id}", Myprofile).Methods("GET")
+	r.HandleFunc("/Dev/profile/{id}", Myprofile).Methods("GET")
 	r.HandleFunc("/Dev/Dashboard", dashboard).Methods("GET")
 	r.HandleFunc("/Dev/Developers", developers).Methods("GET")
 	r.HandleFunc("/Dev/Post", writePost).Methods("GET","POST")
@@ -140,14 +140,14 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return []byte(secret), nil
 	})
 	// var result database.User
-	var _, uid string
+	var name, uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		_ = claims["name"].(string)
+		name = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
 
 	p := database.Finddb(cl, uid)
-
+    fmt.Println(p)
 	if p.UUID != "" {
 		var pro database.Profile
 		body, _ := ioutil.ReadAll(r.Body)
@@ -157,6 +157,8 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`{"error": "body not parsed"}`))
 			return
 		}
+		pro.UUID=uid
+		pro.Name=name
 		pro.Email = p.Email
 		ok := database.Insertprofile(cl1, pro)
 		if ok {
@@ -304,16 +306,20 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		return []byte(secret), nil
 	})
-	var uid string
+	var name,uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		_ = claims["name"].(string)
+		name = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
 	p := database.Finddb(cl, uid)
+	fmt.Println(p)
 	if p.UUID != "" {
 		pro := database.Findprofile(cl1, uid)
+		fmt.Println(pro)
+		result.Name=name
 		result.Education = pro.Edu
 		result.Experience = pro.Exp
+		json.NewEncoder(w).Encode(result)
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -350,8 +356,8 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 			var Post database.Post
 			Post.Id = database.PostId()
 			Post.Email = user.Email
-			Post.UserName = user.Name
-			Post.Text = postdata.Data
+			Post.Username = user.Name
+			Post.Text = postdata.Text
 			var ok, okk bool
 			if err == nil {
 				ok = database.InsertPost(cl2, Post)
@@ -432,7 +438,7 @@ func comment(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(body, &x)
 	if err == nil {
-			ok := database.UpdateComments(cl2, id, x.Data)
+			ok := database.UpdateComments(cl2, id, x.Text)
 			if ok {
 				Total := database.FindComment(cl2, user.Email, id)
 			    json.NewEncoder(w).Encode(Total)
