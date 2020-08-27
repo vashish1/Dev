@@ -4,73 +4,74 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
-	"log"
 
 	"github.com/google/uuid"
 )
 
 //User ......
 type User struct {
-	UUID         string `json:"uuid,omitempty"`
-	Name         string `json:"name,omitempty"`
-	Email        string `json:"email,omitempty"`
-	PasswordHash string `json:"password_hash,omitempty"`
-	Image        string `json:"image,omitempty"`
-	Token        string `json:"token,omitempty"`
-	PostId       []int  `json:"post_id,omitempty"`
+	UUID         string `json:"uuid"`
+	Name         string `json:"name"`
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
+	Image        string `json:"image"`
+	Token        string `json:"token"`
+	PostId       []int  `json:"post_id"`
 }
 
 //profile ....
 type Profile struct {
-	UUID     string            `json:"uuid,omitempty"`
-	Email    string            `json:"email,omitempty"`
-	Name     string            `json:"name,omitempty"`
-	Status   string            `json:"status,omitempty"`
-	Org      string            `json:"org,omitempty"`
-	Website  string            `json:"website,omitempty"`
-	Location string            `json:"location,omitempty"`
-	Skills   []string          `json:"skills,omitempty"`
-	Gitname  string            `json:"gitname,omitempty"`
-	Bio      string            `json:"bio,omitempty"`
-	Social   map[string]string `json:"social,omitempty"`
-	Edu      []Education       `json:"edu,omitempty"`
-	Exp      []Experience      `json:"exp,omitempty"`
+	UUID     string            `json:"uuid"`
+	Email    string            `json:"email"`
+	Name     string            `json:"name"`
+	Status   string            `json:"status"`
+	Org      string            `json:"org"`
+	Website  string            `json:"website"`
+	Location string            `json:"location"`
+	Skills   []string          `json:"skills"`
+	Gitname  string            `json:"gitname"`
+	Bio      string            `json:"bio"`
+	Social   map[string]string `json:"social"`
+	Edu      []Education       `json:"edu"`
+	Exp      []Experience      `json:"exp"`
 }
 
 //education .....
 type Education struct {
-	School      string `json:"school,omitempty"`
-	Degree      string `json:"degree,omitempty"`
-	Field       string `json:"field,omitempty"`
-	From        string `json:"from,omitempty"`
-	To          string `json:"to,omitempty"`
-	Achievemets string `json:"achievemets,omitempty"`
+	School      string `json:"school"`
+	Degree      string `json:"degree"`
+	Field       string `json:"field"`
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Achievemets string `json:"achievemets"`
 }
 
 //experience ....
 type Experience struct {
-	Title       string `json:"title,omitempty"`
-	Org         string `json:"org,omitempty"`
-	Location    string `json:"location,omitempty"`
-	From        string `json:"from,omitempty"`
-	To          string `json:"to,omitempty"`
-	Description string `json:"description,omitempty"`
+	Title       string `json:"title"`
+	Org         string `json:"org"`
+	Location    string `json:"location"`
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Description string `json:"description"`
 }
 
 //Newuser .....
 func Newuser(name string, email string, password string, img string) User {
 
 	Password := SHA256ofstring(password)
-	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: img,PostId: []int{}}
+	U := User{UUID: GenerateUUID(), Name: name, Email: email, PasswordHash: Password, Image: img, PostId: []int{}}
 	return U
 }
 
-func Newprofile(a string,b string,c string,d string,e string,f []string,g string ,h string,i map[string]string,j []Education,k []Experience)Profile{
+func Newprofile(a string, b string, c string, d string, e string, f []string, g string, h string, i map[string]string, j []Education, k []Experience) Profile {
 	var pro Profile
-	pro=Profile{
+	pro = Profile{
 		Email:    a,
 		Status:   b,
 		Org:      c,
@@ -86,8 +87,8 @@ func Newprofile(a string,b string,c string,d string,e string,f []string,g string
 	return pro
 }
 
-func Neweducation(a,b,c,d,e,f string)Education{
-	m:=Education{
+func Neweducation(a, b, c, d, e, f string) Education {
+	m := Education{
 		School:      a,
 		Degree:      b,
 		Field:       c,
@@ -98,9 +99,8 @@ func Neweducation(a,b,c,d,e,f string)Education{
 	return m
 }
 
-
-func Newexperience(a,b,c,d,e,f string)Experience{
-	m:=Experience{
+func Newexperience(a, b, c, d, e, f string) Experience {
+	m := Experience{
 		Title:       a,
 		Org:         b,
 		Location:    c,
@@ -133,7 +133,7 @@ func Updateeducation(c *mongo.Collection, o string, s Education) bool {
 	filter := bson.D{{"email", o}}
 
 	update := bson.M{
-		"$push":bson.M{"edu":s}}
+		"$push": bson.M{"edu": s}}
 
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -146,11 +146,11 @@ func Updateeducation(c *mongo.Collection, o string, s Education) bool {
 }
 
 //Updatexperience ....
-func Updateexperience(c *mongo.Collection, o string, s Experience)bool {
+func Updateexperience(c *mongo.Collection, o string, s Experience) bool {
 	filter := bson.D{{"email", o}}
 
 	update := bson.M{
-		"$push":bson.M{"exp":s}}
+		"$push": bson.M{"exp": s}}
 
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -162,15 +162,15 @@ func Updateexperience(c *mongo.Collection, o string, s Experience)bool {
 }
 
 //UpdateToken updates the user info
-func UpdateToken(c *mongo.Collection,o string,t string)bool{
+func UpdateToken(c *mongo.Collection, o string, t string) bool {
 	filter := bson.D{
 		{"email", o},
 	}
 	update := bson.D{
 		{
-		"$set",bson.D{{"token",t}},
+			"$set", bson.D{{"token", t}},
 		},
-      }
+	}
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		log.Fatal(err)
@@ -179,4 +179,3 @@ func UpdateToken(c *mongo.Collection,o string,t string)bool{
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)
 	return true
 }
-

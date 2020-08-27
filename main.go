@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var secret = os.Getenv("blockkey")
+var secret = os.Getenv("BLOCKKEY")
 var Port = os.Getenv("PORT")
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 	r.HandleFunc("/Dev/profile/{id}", Myprofile).Methods("GET")
 	r.HandleFunc("/Dev/Dashboard", dashboard).Methods("GET")
 	r.HandleFunc("/Dev/Developers", developers).Methods("GET")
-	r.HandleFunc("/Dev/Post", writePost).Methods("GET","POST")
+	r.HandleFunc("/Dev/Post", writePost).Methods("GET", "POST")
 	r.HandleFunc("/Dev/Post/comment/{id}", comment).Methods("GET")
 	r.HandleFunc("/Dev/like/{id}", like).Methods("GET")
 	r.HandleFunc("/Dev/dislike/{id}", dislike).Methods("GET")
@@ -108,7 +108,6 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"error": "body not parsed"}`))
 		return
 	}
-	fmt.Println("test:", test)
 	if test.Password == test.Cpassword {
 		user = database.Newuser(test.Name, test.Email, test.Password, "")
 		ok := database.Insertintouserdb(cl, user)
@@ -131,7 +130,6 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -147,7 +145,6 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p := database.Finddb(cl, uid)
-    fmt.Println(p)
 	if p.UUID != "" {
 		var pro database.Profile
 		body, _ := ioutil.ReadAll(r.Body)
@@ -157,8 +154,8 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`{"error": "body not parsed"}`))
 			return
 		}
-		pro.UUID=uid
-		pro.Name=name
+		pro.UUID = uid
+		pro.Name = name
 		pro.Email = p.Email
 		ok := database.Insertprofile(cl1, pro)
 		if ok {
@@ -178,7 +175,6 @@ func addEducation(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -221,7 +217,6 @@ func addExperience(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -267,7 +262,6 @@ func Myprofile(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -298,7 +292,6 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 	var result Dasboard
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -306,17 +299,15 @@ func dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 		return []byte(secret), nil
 	})
-	var name,uid string
+	var name, uid string
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		name = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
 	p := database.Finddb(cl, uid)
-	fmt.Println(p)
 	if p.UUID != "" {
 		pro := database.Findprofile(cl1, uid)
-		fmt.Println(pro)
-		result.Name=name
+		result.Name = name
 		result.Education = pro.Edu
 		result.Experience = pro.Exp
 		json.NewEncoder(w).Encode(result)
@@ -333,7 +324,6 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -346,8 +336,8 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 		_ = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
-	user:=database.Finddb(cl,uid)
-    if user.UUID!=""{
+	user := database.Finddb(cl, uid)
+	if user.UUID != "" {
 		if r.Method == "POST" {
 
 			var postdata p
@@ -358,6 +348,9 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 			Post.Email = user.Email
 			Post.Username = user.Name
 			Post.Text = postdata.Text
+			Post.Comments = []string{}
+			Post.Likes = 0
+			Post.Dislikes = 0
 			var ok, okk bool
 			if err == nil {
 				ok = database.InsertPost(cl2, Post)
@@ -367,16 +360,16 @@ func writePost(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte(`{"error": "Post not created"}`))
 					return
 				}
-					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(`{"success": "created"}`))
-					return
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte(`{"success": "created"}`))
+				return
 			}
-			}else{
+		} else {
 			Total := database.FindPost(cl2)
 			json.NewEncoder(w).Encode(Total)
 			w.WriteHeader(200)
 			return
-		 }
+		}
 	}
 	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
@@ -387,7 +380,6 @@ func developers(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -400,14 +392,14 @@ func developers(w http.ResponseWriter, r *http.Request) {
 		_ = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
-	p:=database.Finddb(cl,uid)
-	if  p.UUID!=""{
+	p := database.Finddb(cl, uid)
+	if p.UUID != "" {
 		developer := database.FindDevelopers(cl1)
 		json.NewEncoder(w).Encode(developer)
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-    w.WriteHeader(401)
+	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
 }
 
@@ -416,7 +408,6 @@ func comment(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -429,31 +420,31 @@ func comment(w http.ResponseWriter, r *http.Request) {
 		_ = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
-	user:=database.Finddb(cl,uid)
-	if user.UUID!=""{
-	params := mux.Vars(r)
-	pro := params["id"]
-	id, _ := strconv.Atoi(pro)
-	var x p
-	body, _ := ioutil.ReadAll(r.Body)
-	err := json.Unmarshal(body, &x)
-	if err == nil {
+	user := database.Finddb(cl, uid)
+	if user.UUID != "" {
+		params := mux.Vars(r)
+		pro := params["id"]
+		id, _ := strconv.Atoi(pro)
+		var x p
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &x)
+		if err == nil {
 			ok := database.UpdateComments(cl2, id, x.Text)
 			if ok {
 				Total := database.FindComment(cl2, user.Email, id)
-			    json.NewEncoder(w).Encode(Total)
-			    w.WriteHeader(http.StatusOK)
-			    return
+				json.NewEncoder(w).Encode(Total)
+				w.WriteHeader(http.StatusOK)
+				return
 			}
 			w.WriteHeader(400)
 			w.Write([]byte(`{"error": "Error while Commenting"}`))
-			return	
-		} 
-			w.WriteHeader(400)
-			w.Write([]byte(`{"error": "Body not parsed"}`))
 			return
+		}
+		w.WriteHeader(400)
+		w.Write([]byte(`{"error": "Body not parsed"}`))
+		return
 	}
-    w.WriteHeader(401)
+	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
 }
 
@@ -462,7 +453,6 @@ func like(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
 
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	fmt.Println("token", tokenString)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -475,17 +465,17 @@ func like(w http.ResponseWriter, r *http.Request) {
 		_ = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
-	user:=database.Finddb(cl,uid)
-	if user.UUID!=""{
-	params := mux.Vars(r)
-	pro := params["id"]
-	id, _ := strconv.Atoi(pro)
-	ok := database.UpdateLikes(cl2, user.Email, id)
-	if ok {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": "updated"}`))
-		return
-	} 
+	user := database.Finddb(cl, uid)
+	if user.UUID != "" {
+		params := mux.Vars(r)
+		pro := params["id"]
+		id, _ := strconv.Atoi(pro)
+		ok := database.UpdateLikes(cl2, user.Email, id)
+		if ok {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success": "updated"}`))
+			return
+		}
 		w.WriteHeader(400)
 		w.Write([]byte(`{"error": "Error while Liking the post"}`))
 		return
@@ -510,21 +500,21 @@ func dislike(w http.ResponseWriter, r *http.Request) {
 		_ = claims["name"].(string)
 		uid = claims["uid"].(string)
 	}
-	user:=database.Finddb(cl,uid)
-	if user.UUID!=""{
-	params := mux.Vars(r)
-	pro := params["id"]
-	id, _ := strconv.Atoi(pro)
-	ok := database.UpdateDisLikes(cl2, user.Email, id)
-	if ok {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": "updated"}`))
-		return
-	} 
+	user := database.Finddb(cl, uid)
+	if user.UUID != "" {
+		params := mux.Vars(r)
+		pro := params["id"]
+		id, _ := strconv.Atoi(pro)
+		ok := database.UpdateDisLikes(cl2, user.Email, id)
+		if ok {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success": "updated"}`))
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"error": "Error while disliking the post"}`))
-	   return
-}
+		return
+	}
 	w.WriteHeader(401)
 	w.Write([]byte(`{"error": "User Unauthorised"}`))
 }

@@ -5,7 +5,7 @@
 ### Front End:
 
     The Project has its templates and all the static source in the templates folder. 
-    The API's have not been connected to the Frontend yet. 
+    The API's has not been Integrated in the Frontend yet. 
 
 ### Back End
 
@@ -47,6 +47,8 @@
 **Endpoint:** 
      /Dev/signup
 
+**Authorization Token:** Not required
+
 **Request:**
 `POST HTTP/1.1`
 
@@ -83,6 +85,8 @@ Content-Length: xy
 **Endpoint:** 
      /Dev/login
 
+**Authorization Token:** Not required
+
 **Request:**
 `POST HTTP/1.1`
 ```json
@@ -115,6 +119,8 @@ Content-Length: xy
 
 **Endpoint:** 
      /Dev/Profile/{id}
+
+**Authorization Token:** Bearer token required
 
 **Request Param**
    `GET HTTP/1.1` 
@@ -173,6 +179,8 @@ Content-Length: xy
 **Endpoint:** 
      /Dev/Dashboard
 
+**Authorization Token:** Bearer token required
+
 **Request**
    `GET HTTP/1.1` 
     
@@ -217,6 +225,8 @@ Content-Length: xy
 
 **Endpoint:** 
      /Dev/profile/update
+
+**Authorization Token:** Bearer token required
 
 **Request**
    `POST HTTP/1.1` 
@@ -263,6 +273,8 @@ Content-Length: xy
 **Endpoint:** 
      /Dev/profile/add/Experience
 
+**Authorization Token:** Bearer token required
+
 **Request**
    `POST HTTP/1.1` 
 ```json
@@ -299,6 +311,8 @@ Content-Length: xy
 **Endpoint:** 
      /Dev/profile/add/Experience
 
+**Authorization Token:** Bearer token required
+
 **Request**
    `POST HTTP/1.1` 
 ```json
@@ -334,6 +348,8 @@ Content-Length: xy
 
 **Endpoint:** 
      /Dev/Developers
+
+**Authorization Token:** Bearer token required
 
 **Request**
    `GET HTTP/1.1` 
@@ -398,9 +414,10 @@ Content-Length: xy
 
 **You get:**   A `Success-Message` or a `Error-Message` with which you can make further actions also the Total Posts .
 
-
 **Endpoint:** 
      /Dev/Post
+
+**Authorization Token:** Bearer token required
 
 **Request**
    `GET , POST HTTP/1.1`  
@@ -454,6 +471,8 @@ for GET Request:
 **Endpoint:** 
      /Dev/Post/comment/{id}
 
+**Authorization Token:** Bearer token required
+
 **Request Param**
    `GET HTTP/1.1`  
     
@@ -495,6 +514,8 @@ Content-Length: xy
 **Endpoint:** 
      /Dev/like/{id}
 
+**Authorization Token:** Bearer token required
+
 **Request Param**
    `GET HTTP/1.1` 
    ```
@@ -520,6 +541,8 @@ Content-Length: xy
 
 **Endpoint:** 
      /Dev/dislike/{id}
+
+**Authorization Token:** Bearer token required
 
 **Request Param**
    `GET HTTP/1.1` 

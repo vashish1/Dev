@@ -12,7 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DbURL=os.Getenv("MongoUrl")
+var DbURL = os.Getenv("MongoUrl")
+
 //Createdb creates a database
 func Createdb() (*mongo.Collection, *mongo.Collection, *mongo.Collection, *mongo.Client) {
 
@@ -34,40 +35,37 @@ func Createdb() (*mongo.Collection, *mongo.Collection, *mongo.Collection, *mongo
 
 	fmt.Println("Connected to MongoDB!")
 	usercollection := client.Database("Dev").Collection("User")
-	profilecollection :=client.Database("Dev").Collection("Profile")
-	Post:=client.Database("Dev").Collection("Post")
-	return usercollection,profilecollection,Post, client
+	profilecollection := client.Database("Dev").Collection("Profile")
+	Post := client.Database("Dev").Collection("Post")
+	return usercollection, profilecollection, Post, client
 }
 
 //Insertintouserdb inserts the data into the database
 func Insertintouserdb(usercollection *mongo.Collection, u User) bool {
 
-	fmt.Println(u.Name)
 	insertResult, err := usercollection.InsertOne(context.TODO(), u)
 	if err != nil {
 		log.Print(err)
 		return false
 	}
 
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	fmt.Println("Inserted a user: ", insertResult.InsertedID)
 	return true
 }
-
-
 
 //Insertprofile inserts the data into the database
 func Insertprofile(usercollection *mongo.Collection, p Profile) bool {
 
-	fmt.Println(p.Email)
 	insertResult, err := usercollection.InsertOne(context.TODO(), p)
 	if err != nil {
 		log.Print(err)
 		return false
 	}
 
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	fmt.Println("Inserted a profile: ", insertResult.InsertedID)
 	return true
 }
+
 //Findfromuserdb finds the required data
 func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool {
 	filter := bson.D{primitive.E{Key: "email", Value: st}}
@@ -75,7 +73,7 @@ func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool 
 
 	err := usercollection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		fmt.Println(err)
+
 		return false
 	}
 	if result.PasswordHash != SHA256ofstring(p) {
@@ -85,7 +83,7 @@ func Findfromuserdb(usercollection *mongo.Collection, st string, p string) bool 
 }
 
 //Findprofile .............
-func Findprofile(c *mongo.Collection,e string) Profile{
+func Findprofile(c *mongo.Collection, e string) Profile {
 	filter := bson.D{primitive.E{Key: "uuid", Value: e}}
 	var result Profile
 
@@ -108,7 +106,7 @@ func Finddb(c *mongo.Collection, s string) User {
 	return result
 }
 
-func FindDevelopers(c *mongo.Collection)[]Profile{
+func FindDevelopers(c *mongo.Collection) []Profile {
 
 	findOptions := options.Find()
 	var result []Profile
@@ -143,14 +141,14 @@ func FindDevelopers(c *mongo.Collection)[]Profile{
 
 }
 
-func UpdateUserPostId(c *mongo.Collection,email string,id int)bool{
+func UpdateUserPostId(c *mongo.Collection, email string, id int) bool {
 	filter := bson.D{{"email", email}}
-	update :=bson.M{
-		"$push":bson.M{"postId":id},
+	update := bson.M{
+		"$push": bson.M{"postId": id},
 	}
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		fmt.Println(err)
+
 		return false
 	}
 	fmt.Printf("Matched %v documents and updated %v documents.\n", updateResult.MatchedCount, updateResult.ModifiedCount)

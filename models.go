@@ -13,12 +13,12 @@ type logn struct {
 }
 
 type Dasboard struct {
-	Name       string                `json:"name,omitempty"`
-	Education  []database.Education  `json:"education,omitempty"`
-	Experience []database.Experience `json:"experience,omitempty"`
+	Name       string                `json:"name"`
+	Education  []database.Education  `json:"education"`
+	Experience []database.Experience `json:"experience"`
 }
 type p struct {
-	Text string `json:"data"`
+	Text string `json:"text"`
 }
 
 type mockSignup struct {
@@ -27,9 +27,3 @@ type mockSignup struct {
 	Password  string `json:"password"`
 	Cpassword string `json:"cpassword"`
 }
-
-type str struct {
-	Str string
-}
-
-

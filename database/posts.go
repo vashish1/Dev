@@ -1,8 +1,8 @@
 package database
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -15,25 +15,25 @@ import (
 
 //Post ...........
 type Post struct {
-	Id       int      `json:"id,omitempty"`
-	Username string   `json:"username,omitempty"`
-	Email    string   `json:"email,omitempty"`
-	Text     string   `json:"text,omitempty"`
-	Comments []string `json:"comments,omitempty"`
-	Likes    int      `json:"likes,omitempty"`
-	Dislikes int      `json:"dislikes,omitempty"`
+	Id       int      `json:"id"`
+	Username string   `json:"username"`
+	Email    string   `json:"email"`
+	Text     string   `json:"text"`
+	Comments []string `json:"comments"`
+	Likes    int      `json:"likes"`
+	Dislikes int      `json:"dislikes"`
 }
 
 //PostId ..........
-func PostId()int{
+func PostId() int {
 	rand.Seed(time.Now().UnixNano())
-    min := 0
-    max := 10000
-    return(rand.Intn(max - min + 1) + min)
+	min := 0
+	max := 10000
+	return (rand.Intn(max-min+1) + min)
 }
 
 //InsertPost inserts the Post data into the database
-func InsertPost(collection *mongo.Collection,data Post) bool {
+func InsertPost(collection *mongo.Collection, data Post) bool {
 
 	insertResult, err := collection.InsertOne(context.TODO(), data)
 	if err != nil {
@@ -41,18 +41,17 @@ func InsertPost(collection *mongo.Collection,data Post) bool {
 		return false
 	}
 
-	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
+	fmt.Println("Inserted a Post: ", insertResult.InsertedID)
 	return true
 }
 
-
-func FindPost(c *mongo.Collection)[]Post {
+func FindPost(c *mongo.Collection) []Post {
 	findOptions := options.Find()
 	var result []Post
 
 	cur, err := c.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
-		fmt.Println(err)
+
 	}
 
 	// Finding multiple documents returns a cursor
@@ -63,13 +62,13 @@ func FindPost(c *mongo.Collection)[]Post {
 		var elem Post
 		err := cur.Decode(&elem)
 		if err != nil {
-			fmt.Println(err)
+
 		}
 
 		result = append(result, elem)
 	}
 	if err := cur.Err(); err != nil {
-		fmt.Println(err)
+
 	}
 
 	// Close the cursor once finished
@@ -80,13 +79,13 @@ func FindPost(c *mongo.Collection)[]Post {
 }
 
 //UpdateComments updates the Post info
-func UpdateComments(c *mongo.Collection,id int,cmt string)bool{
+func UpdateComments(c *mongo.Collection, id int, cmt string) bool {
 	filter := bson.D{
 		{"id", id},
 	}
 	update := bson.D{
 		{
-			"$push",bson.D{{"comments",cmt}},
+			"$push", bson.D{{"comments", cmt}},
 		},
 	}
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
@@ -98,28 +97,30 @@ func UpdateComments(c *mongo.Collection,id int,cmt string)bool{
 	return true
 }
 
-func FindComment(c *mongo.Collection,email string,id int)[]string{
+func FindComment(c *mongo.Collection, email string, id int) []string {
 	filter := bson.D{
 		{"id", id},
-		{"email",email},
+		{"email", email},
 	}
 	var result Post
 	err := c.FindOne(context.TODO(), filter).Decode(&result)
+
 	if err != nil {
-		return result.Comments
+
+		return []string{}
 	}
-	return []string{}
+	return result.Comments
 }
 
 //UpdateLikes ........
-func UpdateLikes(c *mongo.Collection,email string,id int)bool{
+func UpdateLikes(c *mongo.Collection, email string, id int) bool {
 	filter := bson.D{
 		{"id", id},
-		{"email",email},
+		{"email", email},
 	}
-	update:=bson.D{
+	update := bson.D{
 		{
-			"$inc",bson.D{{"likes",1}},},
+			"$inc", bson.D{{"likes", 1}}},
 	}
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -131,14 +132,14 @@ func UpdateLikes(c *mongo.Collection,email string,id int)bool{
 }
 
 //UpdateDisLikes ........
-func UpdateDisLikes(c *mongo.Collection,email string,id int)bool{
+func UpdateDisLikes(c *mongo.Collection, email string, id int) bool {
 	filter := bson.D{
 		{"id", id},
-		{"email",email},
+		{"email", email},
 	}
-	update:=bson.D{
+	update := bson.D{
 		{
-			"$inc",bson.D{{"dislikes",1}},},
+			"$inc", bson.D{{"dislikes", 1}}},
 	}
 	updateResult, err := c.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
