@@ -572,3 +572,13 @@ Content-Length: xy
    "error":"message"
 }
 ``` 
+
+## Environment variables
+
+  
+  `MongoUrl` : to store the url of mongodb cluster or localhost.
+
+  `BLOCKKEY` : to store encryption secret.
+
+  `PORT`     : port on localhost to run application
+
